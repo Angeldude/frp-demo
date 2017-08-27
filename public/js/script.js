@@ -1,24 +1,27 @@
-const funcs = {};
-funcs.reverse = string => string.split('').reverse().join('');
-funcs.thanks = () => "Thank you!";
-funcs.onegai = () => "Onegai Shimasu!";
-funcs.clear = () => "";
-
-let main = function(){
+let main = function() {
 
   // SETUP
   let text = document.getElementById('words');
-  let got = R.compose(funcs.reverse ,() => text.value)
+  let reversed = str => str.split('').reverse().join('')
 
+  let functions = [
+  R.compose(reversed, () => text.value),
+  () => "Thank you!",
+  () => "Goodbye!",
+  () => "Onegai Shimasu!",
+  () => "",
+  () => "hello?!"
+]
   // OPERATIONS
-  let thx = clicksE('thanks').mapE(funcs.thanks)
-  let domo = clicksE('onegai').mapE(funcs.onegai)
-  let reversed = clicksE('revrs').mapE(got)
-  let cleared = clicksE('clear').mapE(funcs.clear)
-  let simple = mergeE(thx, domo, reversed, cleared);
+  let clickEvents = R.map(clicksE, ['reverse', 'thanks', 'goodbye', 'onegai', 'clear', 'hello'])
+  let buttonEvents = R.map(x => x[0].mapE(x[1]), R.zip(clickEvents, functions))
+
+  let singleEventStream = R.map(mergeE, buttonEvents)
 
   // I/O
-  simple.mapE(merged => text.value = merged);
+  singleEventStream.forEach(u => {
+    u.mapE(merged => text.value = merged)
+  })
 }
 
 window.onload = main;
